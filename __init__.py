@@ -42,6 +42,7 @@ class Youtube(MycroftSkill):
     @intent_file_handler('open.video.intent')
     def handle_open_video(self, message):
         query = message.data.get('query')
+        self.log.info(f"The query is {query}")
 
         results = self.search_videos(query)
 
@@ -49,9 +50,12 @@ class Youtube(MycroftSkill):
             'query': query,
             'results': self.speak_results(results)
         })
+        self.log.info(f"Found results {self.speak_results(results)}")
         video_ordinal = self.request_video_ordinal(results)
+        self.log.info(f"The video ordinal is {video_ordinal}")
         video = results[video_ordinal - 1]
         self.save_audio(video['video_url'])
+        self.log.info(f"Playing video {video['title']} - {video['video_url']}")
         play_proc = play_wav(str(self.get_file_path(video)))
         play_proc.wait()
 
