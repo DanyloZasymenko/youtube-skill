@@ -1,8 +1,6 @@
 import os.path
 
 from mycroft import MycroftSkill, intent_file_handler
-from mycroft.util.format import pronounce_number
-from mycroft.util.parse import extract_number
 from mycroft.util import play_wav
 from requests import get
 from youtube_dl import YoutubeDL
@@ -29,12 +27,6 @@ SEARCH_OPTIONS = {
 }
 
 
-class VideoValidationException(Exception):
-    """This is not really for errors, just a handy way to tidy up the initial checks."""
-
-    pass
-
-
 class Youtube(MycroftSkill):
     def __init__(self):
         MycroftSkill.__init__(self)
@@ -43,53 +35,38 @@ class Youtube(MycroftSkill):
     def handle_open_video(self, message):
         query = message.data.get('query')
         self.log.info(f"The query is {query}")
-
-        results = self.search_videos(query)
-
-        self.speak_dialog('found-results', data={
-            'query': query,
-            'results': self.speak_results(results)
+        self.speak_dialog('searching', data={
+            'query': query
         })
-        self.log.info(f"Found results {self.speak_results(results)}")
-        video_ordinal = self.request_video_ordinal(results)
-        self.log.info(f"The video ordinal is {video_ordinal}")
-        video = results[video_ordinal - 1]
-        self.save_audio(video['video_url'])
+
+        video = self.recursive_search(query, 1)
         self.log.info(f"Playing video {video['title']} - {video['video_url']}")
+        self.save_audio(video['video_url'])
         play_proc = play_wav(str(self.get_file_path(video)))
         play_proc.wait()
 
+    def recursive_search(self, query, count):
+        self.log.info(f"Searching attempt {count}")
+        result = self.search_videos(query, 1)[0]
+
+        self.speak_dialog('found-results', data={
+            'query': query,
+            'results': result['title']
+        })
+        self.log.info(f"Found result {result}")
+        user_response = self.get_response("ask-for-open-confirmation", num_retries=1)
+
+        yes_words = self.translate_list("yes")
+
+        if not user_response or not any(i.strip() in user_response for i in yes_words):
+            return self.recursive_search(query, count + 1)
+        else:
+            return result
 
     def get_file_path(self, video):
         return f"{SAVE_PATH}/{video['title']}.wav"
 
-    def request_video_ordinal(self, results):
-        def validate_ordinal(string):
-            extracted_ordinal = None
-            extract = extract_number(string, ordinals=True, lang=self.lang)
-            if extract is not None:
-                extracted_ordinal = extract[0]
-            return extracted_ordinal is not None
-
-        response = self.get_response("ask-which-open", validator=validate_ordinal)
-        if response is not None:
-            raise VideoValidationException("No response to request for video to open.")
-        else:
-            number = extract_number(response, ordinals=True)
-            if number is None:
-                raise VideoValidationException("No video specified")
-            if number > len(results):
-                raise VideoValidationException("Number is too large")
-
-        return number
-
-    def speak_results(self, results):
-        speak_results = []
-        for i in range(results):
-            speak_results.append(pronounce_number(i) + ' ' + results['title'])
-        return speak_results
-
-    def search_videos(self, arg, number_of_results=10):
+    def search_videos(self, arg, number_of_results=5):
         def format_data(video):
             return {
                 'channel': video['uploader'],
