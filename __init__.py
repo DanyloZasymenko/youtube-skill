@@ -64,9 +64,6 @@ class Youtube(MycroftSkill):
     @intent_file_handler('open.video.intent')
     def handle_open_video(self, message):
         query = message.data.get('query')
-        if self.audio_service is not None:
-            self.audio_service.stop()
-            self.audio_service = None
         self.is_playing = False
         self.is_paused = False
         self.current_video_index = None
