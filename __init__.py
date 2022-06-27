@@ -62,6 +62,12 @@ class Youtube(MycroftSkill):
     @intent_file_handler('open.video.intent')
     def handle_open_video(self, message):
         query = message.data.get('query')
+        if self.media is not None:
+            self.media.stop()
+            self.media = None
+        self.is_playing = False
+        self.is_paused = False
+        self.current_video_index = None
         self.log.info(f"The query is {query}")
         self.speak_dialog('searching', data={
             'query': query
