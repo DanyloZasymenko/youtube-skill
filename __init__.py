@@ -7,6 +7,7 @@ import vlc
 from mycroft import MycroftSkill, intent_file_handler
 from mycroft.skills.intent_service import AdaptIntent
 from mycroft.util.format import nice_duration
+from mycroft.skills.audioservice import AudioService
 from youtube_dl import YoutubeDL
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -46,12 +47,13 @@ class Youtube(MycroftSkill):
         self.next_words = []
         self.prev_words = []
         self.yes_words = []
-        self.media = None
+        self.audio_service = None
         self.is_playing = False
         self.is_paused = False
         self.current_video_index = None
 
     def initialize(self):
+        self.audio_service = AudioService(self.bus)
         self.play_words = self.translate_list('play')
         self.pause_words = self.translate_list('pause')
         self.stop_words = self.translate_list('stop')
@@ -62,9 +64,9 @@ class Youtube(MycroftSkill):
     @intent_file_handler('open.video.intent')
     def handle_open_video(self, message):
         query = message.data.get('query')
-        if self.media is not None:
-            self.media.stop()
-            self.media = None
+        if self.audio_service is not None:
+            self.audio_service.stop()
+            self.audio_service = None
         self.is_playing = False
         self.is_paused = False
         self.current_video_index = None
@@ -164,9 +166,12 @@ class Youtube(MycroftSkill):
 
     def _handle_play_video(self, video):
         if not self.is_playing:
-            self.log.info("Play the video")
-            self.media = vlc.MediaPlayer(video['audio_url'])
-            self.media.play()
+            if self.is_paused:
+                self.log.info("Resume the video")
+                self.audio_service.resume()
+            else:
+                self.log.info("Play the video")
+                self.audio_service.play(video['audio_url'])
             self.is_playing = True
             self.is_paused = False
         else:
@@ -179,14 +184,14 @@ class Youtube(MycroftSkill):
             self.log.info("Pausing the video")
             self.is_playing = False
             self.is_paused = True
-            self.media.pause()
+            self.audio_service.pause()
 
     def _handle_stop_video(self):
-        if self.media is not None:
+        if self.audio_service is not None:
             self.log.info("Stopping the video")
             self.is_playing = False
             self.is_paused = False
-            self.media.stop()
+            self.audio_service.stop()
         else:
             self.log.info("No media player found! Doing nothing")
 
@@ -194,8 +199,7 @@ class Youtube(MycroftSkill):
         video = self.get_video_info(self.search_results[count])
         self.speak_dialog('video-info', data={
             'title': video['title'],
-            'author': video['channel'],
-            'duration': nice_duration(video['duration'])
+            'channel': video['channel']
         })
 
         if self.recursive_ask_for_confirm():
