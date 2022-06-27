@@ -184,8 +184,7 @@ class Youtube(MycroftSkill):
             self.log.info("No media player found! Doing nothing")
 
     def look_through_results(self, count=0):
-        video_info = self.get_video_info(self.search_results[count])
-        video = self.format_data(video_info)
+        video = self.get_video_info(self.search_results[count])
         self.speak_dialog('video-info', data={
             'title': video['title'],
             'author': video['author'],
