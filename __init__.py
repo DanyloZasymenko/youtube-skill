@@ -75,7 +75,7 @@ class Youtube(MycroftSkill):
             })
             return
 
-        self.speak_dialog('found-results', data={
+        self.speak_dialog('found-results-count', data={
             'count': result_count,
             'query': query
         })
@@ -228,6 +228,7 @@ class Youtube(MycroftSkill):
         return [f"https://www.youtube.com/watch?v={result}" for result in search_results]
 
     def get_video_info(self, url):
+        self.log.info(f"Getting info for video {url}")
         with YoutubeDL(SEARCH_OPTIONS) as ydl:
             result = ydl.extract_info(url, process=False, download=False)
 
