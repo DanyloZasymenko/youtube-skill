@@ -85,41 +85,41 @@ class Youtube(MycroftSkill):
         self.log.info(f"Playing video with index {count}: {video['title']} - {video['video_url']}")
         self._handle_play_video(video)
 
-    @intent_file_handler(AdaptIntent().optionally("query").require("next").optionally("video"))
-    def handle_next_video(self):
-        self._handle_next_video()
+    # @intent_file_handler(AdaptIntent().optionally("query").require("next").optionally("video"))
+    # def handle_next_video(self):
+    #     self._handle_next_video()
 
     @intent_file_handler('next.video.intent')
     def handle_next_video_padatious(self):
         self._handle_next_video()
 
-    @intent_file_handler(AdaptIntent().optionally("query").require("prev").optionally("video"))
-    def handle_prev_video(self):
-        self._handle_prev_video()
+    # @intent_file_handler(AdaptIntent().optionally("query").require("prev").optionally("video"))
+    # def handle_prev_video(self):
+    #     self._handle_prev_video()
 
     @intent_file_handler('prev.video.intent')
     def handle_prev_video_padatious(self):
         self._handle_prev_video()
 
-    @intent_file_handler(AdaptIntent().require("pause").optionally("video"))
-    def handle_pause_video(self):
-        self._handle_pause_video()
+    # @intent_file_handler(AdaptIntent().require("pause").optionally("video"))
+    # def handle_pause_video(self):
+    #     self._handle_pause_video()
 
     @intent_file_handler('pause.video.intent')
     def handle_pause_video_padatious(self):
         self._handle_pause_video()
 
-    @intent_file_handler(AdaptIntent().require("stop").optionally("video"))
-    def handle_stop_video(self):
-        self._handle_stop_video()
+    # @intent_file_handler(AdaptIntent().require("stop").optionally("video"))
+    # def handle_stop_video(self):
+    #     self._handle_stop_video()
 
     @intent_file_handler('stop.video.intent')
     def handle_stop_video_padatious(self):
         self._handle_stop_video()
 
-    @intent_file_handler(AdaptIntent().require("play").optionally("video"))
-    def handle_play_video(self):
-        self._handle_play_video()
+    # @intent_file_handler(AdaptIntent().require("play").optionally("video"))
+    # def handle_play_video(self):
+    #     self._handle_play_video()
 
     @intent_file_handler('play.video.intent')
     def handle_play_video_padatious(self):
