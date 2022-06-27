@@ -187,7 +187,7 @@ class Youtube(MycroftSkill):
         video = self.get_video_info(self.search_results[count])
         self.speak_dialog('video-info', data={
             'title': video['title'],
-            'author': video['author'],
+            'author': video['channel'],
             'duration': nice_duration(video['duration'])
         })
 
