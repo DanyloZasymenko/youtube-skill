@@ -27,7 +27,8 @@ SAVE_AUDIO_OPTIONS = {
 }
 SEARCH_OPTIONS = {
     'format': 'bestaudio',
-    'noplaylist': 'True'
+    'noplaylist': True,
+    'cachedir': False
 }
 
 
